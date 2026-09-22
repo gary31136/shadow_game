@@ -61,6 +61,7 @@ const cameraError = ref('')
 let mediaStream = null
 const canvasRef = ref(null)
 const capturedImage = ref('')
+const isCompleted = ref(false)
 
 function shuffleAnimals() {
   shuffledAnimals.value = [...animals]
@@ -130,6 +131,13 @@ function capturePhoto() {
 
 function retakePhoto() {
   capturedImage.value = ''
+  isCompleted.value = false
+}
+
+function completeChallenge() {
+  if (!capturedImage.value) return
+
+  isCompleted.value = true
 }
 
 onMounted(() => {
@@ -143,6 +151,7 @@ onBeforeUnmount(() => {
 
 function nextQuestion() {
   capturedImage.value = ''
+  isCompleted.value = false
 
   currentIndex.value++
 
@@ -153,6 +162,7 @@ function nextQuestion() {
 
 function previousQuestion() {
   capturedImage.value = ''
+  isCompleted.value = false
 
   currentIndex.value--
 
@@ -160,7 +170,6 @@ function previousQuestion() {
     currentIndex.value = shuffledAnimals.value.length - 1
   }
 }
-
 shuffleAnimals()
 </script>
 
@@ -175,83 +184,108 @@ shuffleAnimals()
 
     <div class="game-area">
 
-      <!-- 左邊：題目剪影 -->
-      <div class="panel">
+     <!-- 左邊：題目剪影 -->
+<div class="panel">
 
-        <h2>題目</h2>
+  <h2>
+    {{ isCompleted ? '題目答案' : '題目' }}
+  </h2>
 
-        <div class="shadow-box">
-          <img
-            v-if="shuffledAnimals.length > 0"
-            :src="shuffledAnimals[currentIndex].image"
-            class="animal-image"
-          >
-        </div>
+  <div class="shadow-box">
+    <img
+      v-if="shuffledAnimals.length > 0"
+      :src="shuffledAnimals[currentIndex].image"
+      class="animal-image"
+    >
+  </div>
 
-      </div>
+  <!-- 按下完成後才公布生肖名稱 -->
+  <div
+    v-if="isCompleted && shuffledAnimals.length > 0"
+    class="answer-text"
+  >
+    {{ shuffledAnimals[currentIndex].name }}
+  </div>
 
-      <!-- 右邊：攝影機 -->
-      <div class="panel">
+</div>
 
-        <h2>換你來挑戰！</h2>
+      <!-- 右邊：攝影機 / 學生作品 -->
+<div class="panel">
 
-        <div class="camera-box">
+  <h2>
+    {{ isCompleted ? '我的模仿' : '換你來挑戰！' }}
+  </h2>
 
-          <!-- 還沒拍照時 -->
-          <video
-            v-show="!capturedImage"
-            ref="videoRef"
-            class="camera-video"
-            autoplay
-            playsinline
-            muted
-          ></video>
+  <div class="camera-box">
 
-          <!-- 拍照後 -->
-          <img
-            v-if="capturedImage"
-            :src="capturedImage"
-            class="captured-image"
-          >
+    <!-- 還沒拍照時顯示攝影機 -->
+    <video
+      v-show="!capturedImage"
+      ref="videoRef"
+      class="camera-video"
+      autoplay
+      playsinline
+      muted
+    ></video>
 
-          <!-- 攝影機錯誤訊息 -->
-          <p
-            v-if="cameraError"
-            class="camera-error"
-          >
-            {{ cameraError }}
-          </p>
+    <!-- 拍照後顯示學生照片 -->
+    <img
+      v-if="capturedImage"
+      :src="capturedImage"
+      class="captured-image"
+    >
 
-        </div>
+    <p
+      v-if="cameraError"
+      class="camera-error"
+    >
+      {{ cameraError }}
+    </p>
 
-        <!-- 拍照按鈕 -->
-        <div class="camera-buttons">
+  </div>
 
-          <button
-            v-if="!capturedImage"
-            @click="capturePhoto"
-            class="capture-button"
-          >
-            📸 拍下我的影子
-          </button>
+  <!-- 尚未完成挑戰時顯示操作按鈕 -->
+  <div
+    v-if="!isCompleted"
+    class="camera-buttons"
+  >
 
-          <button
-            v-else
-            @click="retakePhoto"
-            class="retake-button"
-          >
-            🔄 再拍一次
-          </button>
+    <!-- 還沒拍照 -->
+    <button
+      v-if="!capturedImage"
+      @click="capturePhoto"
+      class="capture-button"
+    >
+      📸 拍下我的影子
+    </button>
 
-        </div>
+    <!-- 已經拍照 -->
+    <template v-else>
 
-        <!-- 隱藏 Canvas -->
-        <canvas
-          ref="canvasRef"
-          class="hidden-canvas"
-        ></canvas>
+      <button
+        @click="retakePhoto"
+        class="retake-button"
+      >
+        🔄 再拍一次
+      </button>
 
-      </div>
+      <button
+        @click="completeChallenge"
+        class="complete-button"
+      >
+        ✅ 完成
+      </button>
+
+    </template>
+
+  </div>
+
+  <canvas
+    ref="canvasRef"
+    class="hidden-canvas"
+  ></canvas>
+
+</div>
 
     </div>
 
@@ -467,6 +501,10 @@ button:hover {
 
 .camera-buttons {
   margin-top: 18px;
+
+  display: flex;
+  justify-content: center;
+  gap: 15px;
 }
 
 .capture-button {
@@ -479,6 +517,16 @@ button:hover {
 
 .hidden-canvas {
   display: none;
+}
+
+.answer-text {
+  margin-top: 15px;
+  font-size: 42px;
+  font-weight: bold;
+}
+
+.complete-button {
+  background-color: #8fd694;
 }
 
 </style>
