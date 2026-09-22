@@ -190,70 +190,72 @@ shuffleAnimals()
 
       </div>
 
-
       <!-- 右邊：攝影機 -->
-      <!-- 右邊：攝影機 -->
-<div class="panel">
+      <div class="panel">
 
-  <h2>換你來挑戰！</h2>
+        <h2>換你來挑戰！</h2>
 
-  <div class="camera-box">
+        <div class="camera-box">
 
-    <!-- 還沒拍照時，顯示即時攝影機 -->
-    <video
-      v-show="!capturedImage"
-      ref="videoRef"
-      class="camera-video"
-      autoplay
-      playsinline
-      muted
-    ></video>
+          <!-- 還沒拍照時 -->
+          <video
+            v-show="!capturedImage"
+            ref="videoRef"
+            class="camera-video"
+            autoplay
+            playsinline
+            muted
+          ></video>
 
-    <!-- 拍照後，顯示固定照片 -->
-    <img
-      v-if="capturedImage"
-      :src="capturedImage"
-      class="captured-image"
-    >
+          <!-- 拍照後 -->
+          <img
+            v-if="capturedImage"
+            :src="capturedImage"
+            class="captured-image"
+          >
 
-    <p
-      v-if="cameraError"
-      class="camera-error"
-    >
-      {{ cameraError }}
-    </p>
+          <!-- 攝影機錯誤訊息 -->
+          <p
+            v-if="cameraError"
+            class="camera-error"
+          >
+            {{ cameraError }}
+          </p>
 
-  </div>
+        </div>
 
-  <div class="camera-buttons">
+        <!-- 拍照按鈕 -->
+        <div class="camera-buttons">
 
-    <button
-      v-if="!capturedImage"
-      @click="capturePhoto"
-      class="capture-button"
-    >
-      📸 拍下我的影子
-    </button>
+          <button
+            v-if="!capturedImage"
+            @click="capturePhoto"
+            class="capture-button"
+          >
+            📸 拍下我的影子
+          </button>
 
-    <button
-      v-else
-      @click="retakePhoto"
-      class="retake-button"
-    >
-      🔄 再拍一次
-    </button>
+          <button
+            v-else
+            @click="retakePhoto"
+            class="retake-button"
+          >
+            🔄 再拍一次
+          </button>
 
-  </div>
+        </div>
 
-  <canvas
-    ref="canvasRef"
-    class="hidden-canvas"
-  ></canvas>
+        <!-- 隱藏 Canvas -->
+        <canvas
+          ref="canvasRef"
+          class="hidden-canvas"
+        ></canvas>
 
-</div>
+      </div>
 
+    </div>
 
-    <!-- 上一題 / 下一題 -->
+    <!-- 下方按鈕 -->
     <div class="buttons">
 
       <button @click="previousQuestion">
