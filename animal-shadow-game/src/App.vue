@@ -59,6 +59,8 @@ const currentIndex = ref(0)
 const videoRef = ref(null)
 const cameraError = ref('')
 let mediaStream = null
+const canvasRef = ref(null)
+const capturedImage = ref('')
 
 function shuffleAnimals() {
   shuffledAnimals.value = [...animals]
@@ -97,6 +99,39 @@ function stopCamera() {
   }
 }
 
+function capturePhoto() {
+  const video = videoRef.value
+  const canvas = canvasRef.value
+
+  if (!video || !canvas) return
+
+  canvas.width = video.videoWidth
+  canvas.height = video.videoHeight
+
+  const ctx = canvas.getContext('2d')
+
+  // 讓拍下來的照片跟鏡子畫面方向一樣
+  ctx.save()
+  ctx.translate(canvas.width, 0)
+  ctx.scale(-1, 1)
+
+  ctx.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  )
+
+  ctx.restore()
+
+  capturedImage.value = canvas.toDataURL('image/png')
+}
+
+function retakePhoto() {
+  capturedImage.value = ''
+}
+
 onMounted(() => {
   startCamera()
 })
@@ -107,6 +142,8 @@ onBeforeUnmount(() => {
 
 
 function nextQuestion() {
+  capturedImage.value = ''
+
   currentIndex.value++
 
   if (currentIndex.value >= shuffledAnimals.value.length) {
@@ -115,6 +152,8 @@ function nextQuestion() {
 }
 
 function previousQuestion() {
+  capturedImage.value = ''
+
   currentIndex.value--
 
   if (currentIndex.value < 0) {
@@ -153,32 +192,65 @@ shuffleAnimals()
 
 
       <!-- 右邊：攝影機 -->
-      <div class="panel">
+      <!-- 右邊：攝影機 -->
+<div class="panel">
 
-        <h2>換你來挑戰！</h2>
+  <h2>換你來挑戰！</h2>
 
-        <div class="camera-box">
+  <div class="camera-box">
 
-  <video
-    ref="videoRef"
-    class="camera-video"
-    autoplay
-    playsinline
-    muted
-  ></video>
+    <!-- 還沒拍照時，顯示即時攝影機 -->
+    <video
+      v-show="!capturedImage"
+      ref="videoRef"
+      class="camera-video"
+      autoplay
+      playsinline
+      muted
+    ></video>
 
-  <p
-    v-if="cameraError"
-    class="camera-error"
-  >
-    {{ cameraError }}
-  </p>
+    <!-- 拍照後，顯示固定照片 -->
+    <img
+      v-if="capturedImage"
+      :src="capturedImage"
+      class="captured-image"
+    >
+
+    <p
+      v-if="cameraError"
+      class="camera-error"
+    >
+      {{ cameraError }}
+    </p>
+
+  </div>
+
+  <div class="camera-buttons">
+
+    <button
+      v-if="!capturedImage"
+      @click="capturePhoto"
+      class="capture-button"
+    >
+      📸 拍下我的影子
+    </button>
+
+    <button
+      v-else
+      @click="retakePhoto"
+      class="retake-button"
+    >
+      🔄 再拍一次
+    </button>
+
+  </div>
+
+  <canvas
+    ref="canvasRef"
+    class="hidden-canvas"
+  ></canvas>
 
 </div>
-
-      </div>
-
-    </div>
 
 
     <!-- 上一題 / 下一題 -->
@@ -382,6 +454,29 @@ button:hover {
   font-size: 18px;
 
   color: #c0392b;
+}
+
+.captured-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.camera-buttons {
+  margin-top: 18px;
+}
+
+.capture-button {
+  background-color: #ffb347;
+}
+
+.retake-button {
+  background-color: #9dd9f3;
+}
+
+.hidden-canvas {
+  display: none;
 }
 
 </style>
