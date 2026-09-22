@@ -1,54 +1,56 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
+const base = import.meta.env.BASE_URL
+
 const animals = [
   {
     name: '鼠',
-    image: '/images/rat.png'
+    image: base + 'images/rat.png'
   },
   {
     name: '牛',
-    image: '/images/ox.png'
+    image: base + 'images/ox.png'
   },
   {
     name: '虎',
-    image: '/images/tiger.png'
+    image: base + 'images/tiger.png'
   },
   {
     name: '兔',
-    image: '/images/rabbit.png'
+    image: base + 'images/rabbit.png'
   },
   {
     name: '龍',
-    image: '/images/dragon.png'
+    image: base + 'images/dragon.png'
   },
   {
     name: '蛇',
-    image: '/images/snake.png'
+    image: base + 'images/snake.png'
   },
   {
     name: '馬',
-    image: '/images/horse.png'
+    image: base + 'images/horse.png'
   },
   {
     name: '羊',
-    image: '/images/goat.png'
+    image: base + 'images/goat.png'
   },
   {
     name: '猴',
-    image: '/images/monkey.png'
+    image: base + 'images/monkey.png'
   },
   {
     name: '雞',
-    image: '/images/rooster.png'
+    image: base + 'images/rooster.png'
   },
   {
     name: '狗',
-    image: '/images/dog.png'
+    image: base + 'images/dog.png'
   },
   {
     name: '豬',
-    image: '/images/pig.png'
+    image: base + 'images/pig.png'
   }
 ]
 
