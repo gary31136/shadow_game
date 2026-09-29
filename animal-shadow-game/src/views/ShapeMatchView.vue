@@ -190,55 +190,137 @@ function waitUntilOpenCVReady(timeoutMs = 30000) {
   })
 }
 
+let openCVLoadingPromise = null
+
 function loadOpenCV() {
+
+  // 如果之前已經成功載入
   if (
     window.cv &&
+    !(window.cv instanceof Promise) &&
     typeof window.cv.imread === 'function'
   ) {
     opencvReady.value = true
     return Promise.resolve(window.cv)
   }
 
-  if (opencvLoadPromise) {
-    return opencvLoadPromise
+
+  // 如果正在載入，就共用同一個 Promise
+  if (openCVLoadingPromise) {
+    return openCVLoadingPromise
   }
 
-  opencvLoadPromise = new Promise((resolve, reject) => {
-    const existingScript = document.querySelector(
-      'script[data-opencv-lazy="true"]'
-    )
+
+  openCVLoadingPromise = new Promise((resolve, reject) => {
+
+    console.log('開始載入 OpenCV...')
+
+    // 最多等 20 秒，避免永遠卡住
+    const timeout = setTimeout(() => {
+
+      openCVLoadingPromise = null
+
+      reject(
+        new Error('OpenCV 載入逾時')
+      )
+
+    }, 20000)
+
 
     const finishLoading = async () => {
+
       try {
-        const cv = await waitUntilOpenCVReady()
-        resolve(cv)
+
+        let loadedCV = window.cv
+
+        // 新版 OpenCV.js 的 cv 可能是一個 Promise
+        if (loadedCV instanceof Promise) {
+          console.log('等待 OpenCV 初始化...')
+          loadedCV = await loadedCV
+        }
+
+        if (
+          loadedCV &&
+          typeof loadedCV.imread === 'function'
+        ) {
+
+          clearTimeout(timeout)
+
+          // 把真正初始化完成的 cv 放回全域
+          window.cv = loadedCV
+
+          opencvReady.value = true
+
+          console.log('OpenCV 載入完成')
+
+          resolve(loadedCV)
+
+          return
+        }
+
+        throw new Error('OpenCV 尚未完成初始化')
+
       } catch (error) {
-        opencvLoadPromise = null
+
+        clearTimeout(timeout)
+
+        openCVLoadingPromise = null
+
         reject(error)
       }
     }
 
+
+    // 如果 script 之前已經被加入
+    const existingScript =
+      document.querySelector(
+        'script[data-opencv="true"]'
+      )
+
     if (existingScript) {
+
       finishLoading()
+
       return
     }
 
-    const script = document.createElement('script')
-    script.src = 'https://docs.opencv.org/4.x/opencv.js'
-    script.async = true
-    script.dataset.opencvLazy = 'true'
 
-    script.onload = finishLoading
+    const script =
+      document.createElement('script')
+
+    script.src =
+      'https://docs.opencv.org/4.x/opencv.js'
+
+    script.async = true
+
+    script.dataset.opencv = 'true'
+
+
+    script.onload = () => {
+
+      console.log('opencv.js 下載完成')
+
+      finishLoading()
+    }
+
 
     script.onerror = () => {
-      opencvLoadPromise = null
-      reject(new Error('OpenCV.js 下載失敗'))
+
+      clearTimeout(timeout)
+
+      openCVLoadingPromise = null
+
+      reject(
+        new Error('opencv.js 下載失敗')
+      )
     }
+
 
     document.body.appendChild(script)
   })
 
-  return opencvLoadPromise
+
+  return openCVLoadingPromise
 }
 
 function loadImage(src) {
