@@ -1180,6 +1180,52 @@ onBeforeUnmount(() => {
 
     </div>
 
+<!-- 相似度結果 -->
+<div
+  v-if="isCompleted"
+  class="result-area"
+>
+
+  <div
+    v-if="isComparing"
+    class="comparing-text"
+  >
+    🔍 正在比較兩個影子...
+  </div>
+
+  <div
+    v-else-if="similarityScore !== null"
+    class="similarity-result"
+  >
+    <div class="result-title">
+      🎯 剪影相似度
+    </div>
+
+    <div class="score">
+      {{ similarityScore }}%
+    </div>
+
+    <div class="result-message">
+      {{
+        similarityScore >= 80
+          ? '太厲害了！非常接近！'
+          : similarityScore >= 60
+            ? '很不錯，再調整一下會更像！'
+            : similarityScore >= 40
+              ? '已經有抓到形狀了，再試試看！'
+              : '再觀察一下剪影的輪廓喔！'
+      }}
+    </div>
+  </div>
+
+  <p
+    v-if="compareError"
+    class="compare-error"
+  >
+    {{ compareError }}
+  </p>
+
+</div>
 
 
     <!-- ==================
@@ -1527,5 +1573,54 @@ button:disabled {
     font-size: 32px;
   }
 }
+
+.result-area {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.comparing-text {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.similarity-result {
+  display: inline-block;
+
+  min-width: 220px;
+
+  padding: 18px 30px;
+
+  background-color: white;
+
+  border-radius: 18px;
+
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+.result-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.score {
+  margin-top: 6px;
+
+  font-size: 54px;
+  font-weight: bold;
+}
+
+.result-message {
+  margin-top: 8px;
+
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.compare-error {
+  color: #c0392b;
+  font-size: 18px;
+}
+
 
 </style>
